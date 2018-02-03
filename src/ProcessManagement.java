@@ -1,31 +1,35 @@
+/**
+ * Created by jit_biswas on 2/1/2018.
+ */
 import java.io.File;
 
 public class ProcessManagement {
 
     //set the working directory
-    private static File currentDirectory = new File("/home/jit/progassignment1/java/");
+    private static File currentDirectory = new File("");
     //set the instructions file
-    private static File instructionSet = new File("testproc.txt");
+    private static File instructionSet = new File("test1.txt");
     public static Object lock=new Object();
 
     public static void main(String[] args) throws InterruptedException {
 
         //parse the instruction file and construct a data structure, stored inside ProcessGraph class
-        ParseFile.generateGraph(new File(currentDirectory + "/"+instructionSet));
+        ParseFile.generateGraph(new File(currentDirectory.getAbsolutePath() + "/"+instructionSet));
 
         // Print the graph information
-	// WRITE YOUR CODE
-
+        // WRITE YOUR CODE
+//        ProcessGraph.printGraph();
+        ProcessGraph.printBasic();
 
         // Using index of ProcessGraph, loop through each ProcessGraphNode, to check whether it is ready to run
-                // check if all the nodes are executed
-                // WRITE YOUR CODE
+        // check if all the nodes are executed
+        // WRITE YOUR CODE
 
-                //mark all the runnable nodes
-	        // WRITE YOUR CODE
+        //mark all the runnable nodes
+        // WRITE YOUR CODE
 
-                //run the node if it is runnable
-	        // WRITE YOUR CODE
+        //run the node if it is runnable
+        // WRITE YOUR CODE
 
         System.out.println("All process finished successfully");
     }
