@@ -32,7 +32,6 @@ public class ParseFile {
                     int[] childrenId=new int[childrenStringArray.length];
                     for (int i = 0; i < childrenId.length; i++) {
                         childrenId[i]= Integer.parseInt(childrenStringArray[i]);
-                        ProcessGraph.addNode(childrenId[i]);
                         edgeParents.add(index);
                         edgeChildren.add(childrenId[i]);
                     }
@@ -56,7 +55,6 @@ public class ParseFile {
                     }
                 }
 
-
                 index++;
             }
 
@@ -64,6 +62,12 @@ public class ParseFile {
                 int p = edgeParents.get(i);
                 int c = edgeChildren.get(i);
                 ProcessGraph.nodes.get(p).addChild(ProcessGraph.nodes.get(c));
+            }
+
+            for (int i=0; i< edgeChildren.size(); i++){
+                int p = edgeParents.get(i);
+                int c = edgeChildren.get(i);
+                ProcessGraph.nodes.get(c).addParent(ProcessGraph.nodes.get(p));
             }
 
         } catch (Exception e){
