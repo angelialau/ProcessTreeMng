@@ -41,54 +41,32 @@ public class ProcessManagement {
         // WRITE YOUR CODE
         
         for(ProcessGraphNode node: ProcessGraph.nodes){
+            // if it is a node without any child dependencies
             if(node.getParents().size() == 0 && node.isRunnable() && !node.isExecuted()) {
                 System.out.println("Running node " + node.getNodeId() + " as a starting node.");
-                if(node.getInputFile().equals(new File("stdin"))){
-                    ArrayList<String> sieved = sieve(node);
-                    String command = sieved.get(0);
-
-                    if(command.equalsIgnoreCase("echo")){
-                        String input = sieved.get(1);
-                        try {
-                            Path path = Paths.get(node.getOutputFile().getAbsolutePath());
-                            Files.write(path, Arrays.asList(input), StandardCharsets.UTF_8,
-                                Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
-                        } catch (IOException ioe) {
-                            System.out.print("Whoops IOException");
-                            ioe.printStackTrace();
-                        }
-                    }
-                    
-                    
+                if(node.getInputFile().equals(new File("stdin")) && sieve(node).get(0).equalsIgnoreCase("echo")){
+                    echo(node);
                 } 
                 else{
                     processBuilder.command(node.getCommand());
                     processBuilder.redirectInput(node.getInputFile());
                     processBuilder.redirectOutput(node.getOutputFile());
-                }
-                // if(String.valueOf(node.getInputFile()).equalsIgnoreCase("stdin")){
-                //     // Scanner sc = new Scanner(System.in);
-                // } else processBuilder.redirectInput(node.getInputFile());
-                // if(String.valueOf(node.getOutputFile()).equalsIgnoreCase("stdout")){
-                //     processBuilder.redirectOutput();
-                // } else processBuilder.redirectOutput(node.getOutputFile());
-                
-                try{
-                    Process process = processBuilder.start();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    for (String line; (line = bufferedReader.readLine()) != null;) {
-                        System.out.println(line);  }
-                    bufferedReader.close();
-                }catch(Exception e){
-                    System.out.println(e.getMessage());
+
+                    try{
+                        Process process = processBuilder.start();
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        for (String line; (line = bufferedReader.readLine()) != null;) {
+                            System.out.println(line);  }
+                        bufferedReader.close();
+                    }catch(Exception e){
+                        System.out.println(e.getMessage());
+                    }
                 }
 
                 node.setExecuted();
                 System.out.println("Finished executing process/node " + node.getNodeId());
 
-            } else{
-                
-            }
+            } 
             
         } 
 
@@ -113,6 +91,25 @@ public class ProcessManagement {
         }
         output.add(input);
         return output;
+    }
+
+    public static void echo(ProcessGraphNode node){
+        ArrayList<String> sieved = sieve(node);
+        String command = sieved.get(0);
+
+        if(command.equalsIgnoreCase("echo")){
+            String input = sieved.get(1);
+            try {
+                Path path = Paths.get(node.getOutputFile().getAbsolutePath());
+                Files.write(path, Arrays.asList(input), StandardCharsets.UTF_8,
+                    Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+            } catch (IOException ioe) {
+                System.out.print("Whoops IOException");
+                ioe.printStackTrace();
+            }
+        }
+
+        else System.out.print("Whoops ain't an echo");
     }
 
 }
