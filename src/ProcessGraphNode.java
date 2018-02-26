@@ -92,6 +92,7 @@ public class ProcessGraphNode {
 
     public synchronized boolean allParentsExecuted(){
         boolean ans=true;
+        // why do u need this below? 
         for (ProcessGraphNode child : this.getChildren()) {
             if (child.isExecuted()) {
                 return false;

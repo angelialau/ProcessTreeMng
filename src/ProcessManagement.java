@@ -19,6 +19,7 @@ public class ProcessManagement {
         //parse the instruction file and construct a data structure, stored inside ProcessGraph class
         ParseFile.generateGraph(new File(args[0]));
         ProcessBuilder processBuilder = new ProcessBuilder();
+        ArrayList<ProcessGraphNode> allProcesses = new ArrayList<>();
 
         // Print the graph information
         // WRITE YOUR CODE
@@ -34,82 +35,72 @@ public class ProcessManagement {
             for (ProcessGraphNode childNode : node.getChildren())
                 System.out.print(" " + childNode.getNodeId());
             System.out.print(" \n");
+
+            allProcesses.add(node);
         }
 
-        // Using index of ProcessGraph, loop through each ProcessGraphNode, to check whether it is ready to run
         // check if all the nodes are executed
         // WRITE YOUR CODE
         
+        // tree traversal
+        // first, find all the parent nodes with no prior dependencies 
         for(ProcessGraphNode node: ProcessGraph.nodes){
-            // if it is a node without any child dependencies
             if(node.getParents().size() == 0 && node.isRunnable() && !node.isExecuted()) {
                 System.out.println("Running node " + node.getNodeId() + " as a starting node.");
-                if(node.getInputFile().equals(new File("stdin")) && sieve(node).get(0).equalsIgnoreCase("echo")){
-                    echo(node);
-                } 
-                else{
-                    processBuilder.command(node.getCommand());
-                    processBuilder.redirectInput(node.getInputFile());
-                    processBuilder.redirectOutput(node.getOutputFile());
-
-                    try{
-                        Process process = processBuilder.start();
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        for (String line; (line = bufferedReader.readLine()) != null;) {
-                            System.out.println(line);  }
-                        bufferedReader.close();
-                    }catch(Exception e){
-                        System.out.println(e.getMessage());
-                    }
+                boolean success = runCommand(node);
+                if(success){
+                    node.setExecuted();
+                    allProcesses.remove(node);
+                    System.out.println("Finished executing process/node " + node.getNodeId());
                 }
-
-                node.setExecuted();
-                System.out.println("Finished executing process/node " + node.getNodeId());
-
+                
             } 
-            
         } 
 
-        //mark all the runnable nodes
-        // WRITE YOUR CODE
-
-        //run the node if it is runnable
-        // WRITE YOUR CODE
-            //change Executed to true
-
-        System.out.println("All process finished successfully");
-    }
-
-    public static ArrayList<String> sieve(ProcessGraphNode node){
-        String[] command = node.getCommand().trim().split(" ");
-        ArrayList<String> output = new ArrayList<>();
-        
-        output.add(command[0]);
-        String input = command[1];
-        for(int i=2; i<command.length; i++){
-            input+= " " + command[i];
-        }
-        output.add(input);
-        return output;
-    }
-
-    public static void echo(ProcessGraphNode node){
-        ArrayList<String> sieved = sieve(node);
-        String command = sieved.get(0);
-
-        if(command.equalsIgnoreCase("echo")){
-            String input = sieved.get(1);
-            try {
-                Path path = Paths.get(node.getOutputFile().getAbsolutePath());
-                Files.write(path, Arrays.asList(input), StandardCharsets.UTF_8,
-                    Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
-            } catch (IOException ioe) {
-                System.out.print("Whoops IOException");
-                ioe.printStackTrace();
+        // then keep checking processes whose parents have been executed 
+        while(!allProcesses.isEmpty()){
+            
+            // if parents have been executed, can just execute too
+            for(ProcessGraphNode node : ProcessGraph.nodes){
+                if (allProcesses.contains(node) && node.allParentsExecuted() && node.isRunnable() && !node.isExecuted()){
+                    System.out.println("Running child node " + node.getNodeId() + " because it's parents have completed execution");
+                     boolean success = runCommand(node);
+                    if(success){
+                        node.setExecuted();
+                        allProcesses.remove(node);
+                        System.out.println("Finished executing process/node " + node.getNodeId());
+                    }
+                }
             }
         }
+        boolean allExecuted = true;
+        for(ProcessGraphNode node: ProcessGraph.nodes){
+            if(!node.isExecuted()) allExecuted = false;
+        }
+        if(allExecuted) System.out.println("All process finished successfully");
+        else System.out.println("Not all processes were finished successfully");
+    }
 
-        else System.out.print("Whoops ain't an echo");
+    public static boolean runCommand(ProcessGraphNode node){
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command(node.getCommand().split(" "));
+        if(!node.getInputFile().equals(new File("stdin"))) processBuilder.redirectInput(node.getInputFile());
+        if(!node.getOutputFile().equals(new File("stdout"))) processBuilder.redirectOutput(node.getOutputFile());
+
+        try{
+            Process process = processBuilder.start();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            for (String line; (line = bufferedReader.readLine()) != null;) {
+                System.out.println(line);  }
+            bufferedReader.close();
+        }catch(Exception e){
+            System.out.println("there appears to be an error:");
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+        return true;
+        
     }
 
 }
