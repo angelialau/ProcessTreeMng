@@ -21,7 +21,7 @@ public class ProcessGraph {
         try{
             for (ProcessGraphNode node :
                     nodes) {
-                System.out.print("Node "+ node.getNodeId()+": \nParent: ");
+                System.out.print("Node： "+ node.getNodeId()+" \nParent: ");
                 if (node.getParents().isEmpty()) System.out.print("none");
                 for (ProcessGraphNode parentnode :
                         node.getParents()) {
@@ -50,7 +50,7 @@ public class ProcessGraph {
     public static void printBasic(){
         System.out.println("Basic info:");
         for (ProcessGraphNode node : nodes) {
-            System.out.println("Node: "+node.getNodeId()+" Runable: "+node.isRunnable()+" Executed: "+node.isExecuted());
+            System.out.println("Node: "+node.getNodeId()+" Runnable: "+node.isRunnable()+" Executed: "+node.isExecuted());
         }
     }
 

@@ -20,14 +20,16 @@ public class ParseFile {
                 String line=fileIn.nextLine();
                 String[] quatiles= line.split(":");
                 if (quatiles.length!=4) {
-                    System.out.println("Wrong input format!");
+                    System.out.println("Wrong input format. Input file format should be <program name with argument>:<child nodes IDs>:<input>:<output>.");
                     throw new Exception();
                 }
 
                 //add this node
+                //the first line of the file will take on the first node
+                //subsequent increase of index for the next line
                 ProcessGraph.addNode(index);
                 //handle Children
-                if (!quatiles[1].equals("none")){
+                if (!quatiles[1].equals("none")){ // there are children nodes
                     String[] childrenStringArray=quatiles[1].split(" ");
                     int[] childrenId=new int[childrenStringArray.length];
                     for (int i = 0; i < childrenId.length; i++) {
